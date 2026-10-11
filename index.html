@@ -1121,5 +1121,82 @@ if(typeof STUDY_MATERIALS!=='undefined' && Array.isArray(STUDY_MATERIALS.English
   #portal .portal-shell::before{pointer-events:none!important;}
 }
 </style>
+<script id="saturn-hidden-question-persistence-v1">
+(function(){
+  function hiddenStore(){return readJson('saturnHiddenQuestions',{});}
+  function keyFor(q){
+    const subject=window.chapterReaderSubject||'Study Materials';
+    const chapter=document.getElementById('chapterReaderTitle')?.textContent||'Chapter';
+    return subject+'|'+chapter+'|'+Number(q?.dataset?.questionNumber||0);
+  }
+  const originalToggle=window.toggleHiddenQuestion;
+  window.toggleHiddenQuestion=function(q,button){
+    if(typeof originalToggle==='function')originalToggle(q,button);
+    if(!q)return;
+    const all=hiddenStore(),key=keyFor(q);
+    if(q.classList.contains('question-hidden'))all[key]={subject:window.chapterReaderSubject||'Study Materials',chapter:document.getElementById('chapterReaderTitle')?.textContent||'Chapter',questionNumber:Number(q.dataset.questionNumber||0),hiddenAt:Date.now()};
+    else delete all[key];
+    storeJson('saturnHiddenQuestions',all);
+  };
+  const originalOpen=window.openChapterReader;
+  window.openChapterReader=function(item){
+    if(typeof originalOpen==='function')originalOpen(item);
+    const body=document.getElementById('chapterReaderBody');if(!body)return;
+    const all=hiddenStore(),show=body.dataset.showHidden==='true';
+    body.querySelectorAll('.chapter-question').forEach(q=>{
+      const hidden=!!all[keyFor(q)];
+      q.classList.toggle('question-hidden',hidden);
+      q.classList.toggle('question-hidden-revealed',hidden&&show);
+      q.style.display=hidden?(show?'':'none'):'';
+      const b=q.querySelector('.question-hide-toggle');if(b)b.textContent=hidden?'Unhide Question':'Hide Question';
+    });
+    if(typeof filterChapterQuestions==='function')filterChapterQuestions(document.getElementById('chapterQuestionSearch')?.value||'',document.getElementById('chapterQuestionFilter')?.value||'all');
+  };
+})();
+</script>
+<style id="saturn-completed-card-fill-v2">
+.chapter-question.question-studied,
+.chapter-question.question-studied .chapter-question-content,
+.chapter-question.question-studied .chapter-question-actions,
+.chapter-question.question-studied .chapter-solution{
+  background:#0f8a44!important;
+  background-color:#0f8a44!important;
+  border-color:#0f8a44!important;
+  color:#fff!important;
+}
+.chapter-question.question-studied *{color:#fff!important;}
+.chapter-question.question-studied button,
+.chapter-question.question-studied label,
+.chapter-question.question-studied input{
+  color:#fff!important;
+}
+</style>
+<style id="saturn-completed-outer-card-v3">
+#chapterReaderBody .chapter-question.question-studied,
+#chapterReaderBody .chapter-question.question-studied .chapter-question-content,
+#chapterReaderBody .chapter-question.question-studied .chapter-question-actions,
+#chapterReaderBody .chapter-question.question-studied .chapter-solution{
+  background:#0f8a44!important;
+  background-color:#0f8a44!important;
+  border-color:#0f8a44!important;
+  color:#fff!important;
+}
+#chapterReaderBody .chapter-question.question-studied *{color:#fff!important;}
+</style>
+<style id="saturn-desktop-profile-controls-v1">
+@media (min-width:851px){
+  #portal .profile .updates-button,
+  #portal .profile .feedback-top-button,
+  #portal .profile .settings-button{
+    display:inline-flex!important;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    visibility:visible!important;
+    pointer-events:auto!important;
+  }
+  #portal .profile{display:flex!important;align-items:center;gap:7px!important;}
+}
+</style>
 </body>
 </html>

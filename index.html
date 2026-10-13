@@ -1561,7 +1561,7 @@ html.hindi-translations-off .hindi-practice-answer-panel .hindi-english-token,ht
  };
  var original=window.openMaterial;
  window.openMaterial=function(id){
-  var parts=String(id).split('-'),subject=parts.slice(0,-1).join('-'),index=Number(parts.at(-1)),item=(materials?.[subject]||[])[index];
+  var parts=String(id).split('-'),subject=parts.slice(0,-1).join('-'),index=Number(parts.at(-1)),item=(STUDY_MATERIALS?.[subject]||[])[index];
   if(subject==='Hindi'&&item&&!item.hindiLiterature){var url=links[item.title]||(/Term 1.*Worksheet/i.test(item.title||'')?links['Term 1 Hindi Worksheet']:null);if(url){window.open(url,'_blank','noopener,noreferrer');return;}}
   return original.apply(this,arguments);
  };
@@ -1848,7 +1848,7 @@ body:not(.hindi-reader-active) #chapterReaderBody .hindi-english-token,body:not(
   const originalOpen=window.openMaterial;
   window.openMaterial=function(id){
     const parts=String(id||'').split('-'), subject=parts.slice(0,-1).join('-'), index=Number(parts.at(-1));
-    const item=(materials?.[subject]||[])[index];
+    const item=(STUDY_MATERIALS?.[subject]||[])[index];
     if(subject==='English'&&item?.comingSoon){if(typeof showToast==='function')showToast('This English worksheet is coming soon.');return;}
     return originalOpen.apply(this,arguments);
   };

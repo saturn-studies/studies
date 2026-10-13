@@ -1884,5 +1884,67 @@ body:not(.hindi-reader-active) #chapterReaderBody .hindi-english-token,body:not(
   if(typeof currentSubject!=='undefined'&&currentSubject==='Arabic'&&typeof renderMaterials==='function')renderMaterials();
 })();
 </script>
+<script id="saturn-hindi-answer-controls-v0165">
+(function(){
+  function normalize(){
+    if(window.chapterReaderSubject!=='Hindi')return;
+    document.querySelectorAll('#chapterReaderBody .chapter-question').forEach(function(q){
+      const actions=q.querySelector('.chapter-question-actions');
+      const simple=q.querySelector('.simpler-answer-toggle');
+      const simplePanel=q.querySelector('.simpler-answer');
+      const normalPanel=q.querySelector('.chapter-solution');
+      if(!actions||!normalPanel)return;
+      let normal=actions.querySelector('.hindi-normal-answer-toggle');
+      if(!normal){
+        normal=[...actions.querySelectorAll('button')].find(function(b){return b!==simple&&!b.classList.contains('question-hide-toggle')&&!b.classList.contains('question-label-button')&&!b.classList.contains('question-add-note-button')&&!b.classList.contains('question-view-notes-button')&&!b.classList.contains('chapter-bookmark-toggle')&&/^(View|Hide) (Answer|Solution)$/i.test((b.textContent||'').trim())});
+        if(normal)normal.classList.add('hindi-normal-answer-toggle');
+      }
+      if(!normal){
+        normal=document.createElement('button');
+        normal.type='button';
+        normal.className='chapter-solution-toggle hindi-normal-answer-toggle';
+        normal.textContent='View Answer';
+        if(simple)actions.insertBefore(normal,simple.nextSibling);
+        else{const hide=actions.querySelector('.question-hide-toggle');hide?actions.insertBefore(normal,hide):actions.appendChild(normal);}
+      }
+      normal.onclick=function(e){
+        e.preventDefault();
+        const open=!normalPanel.classList.contains('open');
+        normalPanel.classList.toggle('open',open);
+        if(simplePanel)simplePanel.classList.remove('open');
+        normal.textContent=open?'Hide Answer':'View Answer';
+        if(simple)simple.textContent='View Simpler Answer';
+      };
+      normal.textContent=normalPanel.classList.contains('open')?'Hide Answer':'View Answer';
+      if(simple&&simplePanel){
+        simple.onclick=function(e){
+          e.preventDefault();
+          const open=!simplePanel.classList.contains('open');
+          simplePanel.classList.toggle('open',open);
+          normalPanel.classList.remove('open');
+          simple.textContent=open?'Hide Simpler Answer':'View Simpler Answer';
+          normal.textContent='View Answer';
+        };
+        simple.textContent=simplePanel.classList.contains('open')?'Hide Simpler Answer':'View Simpler Answer';
+      }
+    });
+  }
+  const oldOpen=window.openChapterReader;
+  window.openChapterReader=function(){const result=oldOpen?.apply(this,arguments);setTimeout(normalize,80);setTimeout(normalize,300);return result;};
+  window.saturnNormalizeHindiAnswers=normalize;
+})();
+</script>
+<style id="saturn-hindi-translation-toggle-fix-v0166">
+html.hindi-translations-off body.hindi-reader-active #chapterReaderBody .hindi-translation,
+html.hindi-translations-off body.hindi-reader-active #chapterReaderBody .hindi-auto-translation,
+html.hindi-translations-off body.hindi-reader-active #chapterReaderBody .hindi-translation-fragment,
+html.hindi-translations-off body.hindi-reader-active #chapterReaderBody .hindi-english-token,
+html.hindi-translations-off body.hindi-reader-active #chapterReaderBody .hindi-translation-punctuation,
+html.hindi-translations-off body.hindi-reader-active #chapterReaderBody .question-translation,
+html.hindi-translations-off body.hindi-reader-active #chapterReaderBody .answer-translation,
+html.hindi-translations-off body.hindi-reader-active #chapterReaderBody .simpler-translation{
+  display:none!important;background:transparent!important;background-color:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;
+}
+</style>
 </body>
 </html>

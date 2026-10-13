@@ -1561,7 +1561,7 @@ html.hindi-translations-off .hindi-practice-answer-panel .hindi-english-token,ht
  };
  var original=window.openMaterial;
  window.openMaterial=function(id){
-  var parts=String(id).split('-'),subject=parts.slice(0,-1).join('-'),index=Number(parts.at(-1)),item=(window.STUDY_MATERIALS?.[subject]||[])[index];
+  var parts=String(id).split('-'),subject=parts.slice(0,-1).join('-'),index=Number(parts.at(-1)),item=(materials?.[subject]||[])[index];
   if(subject==='Hindi'&&item&&!item.hindiLiterature){var url=links[item.title]||(/Term 1.*Worksheet/i.test(item.title||'')?links['Term 1 Hindi Worksheet']:null);if(url){window.open(url,'_blank','noopener,noreferrer');return;}}
   return original.apply(this,arguments);
  };
@@ -1823,19 +1823,65 @@ body:not(.hindi-reader-active) #chapterReaderBody .hindi-english-token,body:not(
 <script id="saturn-v160-final-order-on-open">
 (function(){function order(){const t=document.querySelector('.chapter-reader-tools'),s=document.getElementById('chapterQuestionSearch'),l=document.getElementById('chapterLabelFilter'),h=document.getElementById('chapterHiddenToggle');if(t&&s&&l&&h){s.after(l);l.after(h);}}const prev=window.openChapterReader;window.openChapterReader=function(){const r=prev?.apply(this,arguments);setTimeout(order,120);setTimeout(order,760);return r;};})();
 </script>
-<script id="saturn-v160-four-hindi-pdfs-only">
+<script id="saturn-hindi-grammar-pdf-routing">
 (function(){
- window.__hindiPdfLinks={};
- const allowed={
-  'एक आशीर्वाद':'https://drive.google.com/file/d/1AX9etUysYL37YXByvzZc1zod3u56YwnK/view?usp=sharing',
-  'दो गौरैया':'https://drive.google.com/file/d/1NH86SesXZ6SdbfLAjTnfzinwViYurYwp/view?usp=sharing',
-  'स्वदेश':'https://drive.google.com/file/d/15E7zZmZAHx91l-9mXhLjoG7e79gSIEQN/view?usp=sharing',
-  'हरिद्वार':'https://drive.google.com/file/d/1ocJ562-4FL6lf8aIzDTyKn1PXDJyL-ml/view?usp=sharing'
- };
- function clean(t){return String(t||'').replace(/\s+/g,'').replace(/[़]/g,'');}
- function allowedPdf(){const title=document.getElementById('chapterReaderTitle')?.textContent||'',k=Object.keys(allowed).find(x=>clean(title).includes(clean(x))||clean(x).includes(clean(title)));return k?allowed[k]:null;}
- function enforce(){const tools=document.querySelector('.chapter-reader-tools');if(!tools)return;const url=window.chapterReaderSubject==='Hindi'?allowedPdf():null;tools.querySelectorAll('#hindiViewPdf,#chapterViewPdf').forEach(b=>{if(!url||b.id!=='hindiViewPdf')b.remove();});if(!url)return;let b=tools.querySelector('#hindiViewPdf');if(!b){b=document.createElement('button');b.id='hindiViewPdf';b.type='button';b.className='chapter-tool hindi-pdf-button';b.textContent='View PDF';b.title='Open the original Hindi PDF';tools.appendChild(b);}b.onclick=()=>window.open(url,'_blank','noopener,noreferrer');}
- const prev=window.openChapterReader;window.openChapterReader=function(){const r=prev?.apply(this,arguments);setTimeout(enforce,120);setTimeout(enforce,820);return r;};
+  // Grammar chapters open their supplied Google Drive PDFs; literature remains in the reader.
+  window.__hindiPdfLinks={
+    'उपसर्ग - प्रत्यय':'https://drive.google.com/file/d/1eN6C9zHICWA11AtPYGpgU2pgp-TLshrz/view?usp=sharing',
+    'कारक':'https://drive.google.com/file/d/1shWN8aGZMi2nrRe8MuCqhAeBcvIeeFm_/view?usp=sharing',
+    'काल (Tenses)':'https://drive.google.com/file/d/1O1u75vzEADv6FfTYkk9Ijd1LRxFc1sVW/view?usp=sharing',
+    'मुहावरे और लोकोक्तियाँ':'https://drive.google.com/file/d/1nFHUydCi9P6wHFlAmYWPohk1VtMPZ8Al/view?usp=sharing',
+    'रचना के आधार पर वाक्य भेद':'https://drive.google.com/file/d/14RUdXHoMmZEG8pCiZt5b6PeCMNr9bMYH/view?usp=sharing'
+  };
+})();
+</script>
+<style id="saturn-english-worksheets-coming-soon-style">
+.material.coming-soon-material{opacity:.78;cursor:not-allowed;border-style:dashed}
+.material.coming-soon-material .open-icon{color:#f5c542;font-size:.78rem;font-weight:800;white-space:nowrap}
+</style>
+<script id="saturn-english-worksheets-coming-soon-v0162">
+(function(){
+  const materials=(typeof STUDY_MATERIALS!=='undefined'?STUDY_MATERIALS:null);
+  const english=materials&&materials.English;
+  if(!Array.isArray(english))return;
+  english.forEach(item=>{if(item.worksheet||/worksheet/i.test(item.title||'')){item.comingSoon=true;item.description='English · Worksheet · Coming Soon';}});
+  const originalOpen=window.openMaterial;
+  window.openMaterial=function(id){
+    const parts=String(id||'').split('-'), subject=parts.slice(0,-1).join('-'), index=Number(parts.at(-1));
+    const item=(materials?.[subject]||[])[index];
+    if(subject==='English'&&item?.comingSoon){if(typeof showToast==='function')showToast('This English worksheet is coming soon.');return;}
+    return originalOpen.apply(this,arguments);
+  };
+  const originalRender=window.renderMaterials;
+  window.renderMaterials=function(){
+    if((typeof currentSubject==='undefined'||currentSubject!=='English'))return originalRender.apply(this,arguments);
+    const list=document.getElementById('materialsList');
+    if(!list)return originalRender.apply(this,arguments);
+    const items=(typeof getMaterials==='function'?getMaterials('English'):english)||[];
+    list.innerHTML=items.length?items.map(m=>{
+      const soon=!!m.comingSoon;
+      return `<button class="material${soon?' coming-soon-material':''}" ${soon?'disabled aria-disabled="true"':'onclick=\'openMaterial('+JSON.stringify(m.id||'')+')\''}>`+
+        `<span class="material-icon">${m.type||'PDF'}</span>`+
+        `<span class="material-title"><strong>${escapeHTML(m.title)}</strong><span>${escapeHTML(m.description||'Study resource')}</span></span>`+
+        `<span class="open-icon">${soon?'Coming Soon':'→'}</span></button>`;
+    }).join(''):'<div class="empty-materials">No materials yet. Upload the first study file.</div>';
+  };
+  if(typeof currentSubject!=='undefined'&&currentSubject==='English')window.renderMaterials();
+})();
+</script>
+<script id="saturn-arabic-term1-v0163">
+(function(){
+  if(typeof STUDY_MATERIALS==='undefined'||!Array.isArray(STUDY_MATERIALS.Arabic))return;
+  const title='Term 1 Arabic';
+  if(!STUDY_MATERIALS.Arabic.some(item=>item.title===title)){
+    STUDY_MATERIALS.Arabic.push({
+      title:title,
+      description:'Arabic · Term 1',
+      type:'LINK',
+      url:'https://docs.google.com/document/d/1dGGG0C7rJC6Yp0tZRRWSMxyxl2kfKTbQtUAs44WxI9k/edit?usp=sharing'
+    });
+  }
+  if(typeof currentSubject!=='undefined'&&currentSubject==='Arabic'&&typeof renderMaterials==='function')renderMaterials();
 })();
 </script>
 </body>
